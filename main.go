@@ -68,15 +68,6 @@ func (m *Rotors) SetLed(rotorId int, color LedColor) {
 	m.leds[rotorId] = color
 }
 
-//7: 0
-//6: 1
-//5: 1
-//4: 0 <- LED4
-//3: 0 <- LED3
-//2: 0 <- LED2
-//1: 0 <- LED1
-//0: 0 <- ?
-
 type LedColor int
 
 const (
