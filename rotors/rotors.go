@@ -1,6 +1,11 @@
 package rotors
 
-func animateLeds(rotors *Rotors) error {
+import (
+	"os"
+	"time"
+)
+
+func AnimateLeds(rotors *Rotors) error {
 	for i := 0; i < 4; i++ {
 		rotors.SetLed(i, LedOff)
 	}
@@ -9,7 +14,7 @@ func animateLeds(rotors *Rotors) error {
 		return err
 	}
 
-	for loop := 0; loop < 3; loop++ {
+	for loop := 0; loop < 100; loop++ {
 		for i := 0; i < 4; i++ {
 			rotors.SetLed(i, LedOrange)
 
@@ -40,12 +45,12 @@ type Rotors struct {
 	leds   []LedColor
 }
 
-func NewRotors(path string) (*Rotors, error) {
+func NewRotors() (*Rotors, error) {
 	rotors := &Rotors{
 		rotors: make([]int, 4),
 		leds:   make([]LedColor, 4),
 	}
-	err := rotors.Open(path)
+	err := rotors.Open("/dev/ttyO0")
 	if err != nil {
 		return nil, err
 	}
