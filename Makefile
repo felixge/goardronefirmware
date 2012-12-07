@@ -1,12 +1,33 @@
-deploy: arm ftp-upload telnet-run
+DRONE_IP := 192.168.1.1
 
-arm: main.go
-	GOOS=linux GOARCH=arm go build -o $@ $^
+export GOOS := linux
+export GOARCH := arm
+export CGO_ENABLED=0
 
-ftp-upload:
-	echo put arm | ftp anonymous:anonymous@192.168.1.1
+define run
+curl -T $1 ftp://@$(DRONE_IP)/upload
+(\
+echo spawn telnet $(DRONE_IP);\
+echo expect -re .*#;\
+echo send \"cd /data/video\\\r\";\
+echo expect -re .*#;\
+echo send \"killall $1\\\r\";\
+echo expect -re .*#;\
+echo send \"rm $1\\\r\";\
+echo expect -re .*#;\
+echo send \"mv upload $1\\\r\";\
+echo expect -re .*#;\
+echo send \"chmod +x $1\\\r\";\
+echo expect -re .*#;\
+echo send \"./$1\\\r\";\
+echo set timeout -1;\
+echo expect -re .*#;\
+) | expect
+endef
 
-telnet-run:
-	( sleep 0.2; echo "cd /data/video\nchmod +x arm\nkillall arm\nclear\n./arm\nexit\n"; sleep 999 ) | telnet 192.168.1.1
 
-.PHONY: arm ftp-upload telnet-run
+debug-navdata: navdata/debug/server.go
+	go build -o $@ $^
+	@$(call run,$@)
+
+.PHONY: debug-navdata
