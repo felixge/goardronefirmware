@@ -1,4 +1,4 @@
-package rotors
+package motors
 
 import (
 	"math/rand"
@@ -6,19 +6,19 @@ import (
 	"time"
 )
 
-func AnimateLeds(rotors *Rotors) error {
+func AnimateLeds(speeds *Controller) error {
 	for i := 0; i < 4; i++ {
-		rotors.SetLed(i, LedOff)
+		speeds.SetLed(i, LedOff)
 	}
-	err := rotors.UpdateLeds()
+	err := speeds.UpdateLeds()
 	if err != nil {
 		return err
 	}
 
 	for loop := 0; loop < 50; loop++ {
 		for i := 0; i < 4; i++ {
-			rotors.SetLed(i, LedColor(rand.Intn(LedOrange + 1)))
-			err = rotors.UpdateLeds()
+			speeds.SetLed(i, LedColor(rand.Intn(LedOrange + 1)))
+			err = speeds.UpdateLeds()
 			time.Sleep(25 * time.Millisecond)
 
 			if err != nil {
@@ -28,45 +28,45 @@ func AnimateLeds(rotors *Rotors) error {
 	}
 
 	for i := 0; i < 4; i++ {
-		rotors.SetLed(i, LedGreen)
+		speeds.SetLed(i, LedGreen)
 	}
-	return rotors.UpdateLeds()
+	return speeds.UpdateLeds()
 }
 
-type Rotors struct {
+type Controller struct {
 	file   *os.File
-	rotors []int
+	speeds []int
 	leds   []LedColor
 }
 
-func NewRotors() (*Rotors, error) {
-	rotors := &Rotors{
-		rotors: make([]int, 4),
+func NewController() (*Controller, error) {
+	speeds := &Controller{
+		speeds: make([]int, 4),
 		leds:   make([]LedColor, 4),
 	}
-	err := rotors.Open("/dev/ttyO0")
+	err := speeds.Open("/dev/ttyO0")
 	if err != nil {
 		return nil, err
 	}
-	return rotors, nil
+	return speeds, nil
 }
 
-func (m *Rotors) Open(path string) error {
+func (c *Controller) Open(path string) error {
 	file, err := os.OpenFile(path, os.O_RDWR, 0)
 	if err != nil {
 		return err
 	}
-	m.file = file
+	c.file = file
 	return nil
 }
 
 // TODO: make value a float between 0...1 instead of a 0...512 PWM value
-func (m *Rotors) SetSpeed(rotorId int, value int) {
-	m.rotors[rotorId] = value
+func (c *Controller) SetSpeed(motorId int, value int) {
+	c.speeds[motorId] = value
 }
 
-func (m *Rotors) SetLed(rotorId int, color LedColor) {
-	m.leds[rotorId] = color
+func (c *Controller) SetLed(motorId int, color LedColor) {
+	c.leds[motorId] = color
 }
 
 type LedColor int
@@ -80,7 +80,7 @@ const (
 
 // cmd = 011rrrrx xxxggggx (used to be 011grgrg rgrxxxxx in AR Drone 1.0)
 // see: https://github.com/ardrone/ardrone/blob/master/ardrone/motorboard/motorboard.c#L243
-func (m *Rotors) ledCmd() []byte {
+func (m *Controller) ledCmd() []byte {
 	cmd := make([]byte, 2)
 	cmd[0] = 0x60
 
@@ -96,23 +96,23 @@ func (m *Rotors) ledCmd() []byte {
 	return cmd
 }
 
-// see: https://github.com/ardrone/ardrone/blob/master/ardrone/rotorboard/rotorboard.c
-func (m *Rotors) pwmCmd() []byte {
+// see: https://github.com/ardrone/ardrone/blob/master/ardrone/motorboard/motorboard.c
+func (m *Controller) pwmCmd() []byte {
 	cmd := make([]byte, 5)
-	cmd[0] = byte(0x20 | ((m.rotors[0] & 0x1ff) >> 4))
-	cmd[1] = byte(((m.rotors[0] & 0x1ff) << 4) | ((m.rotors[1] & 0x1ff) >> 5))
-	cmd[2] = byte(((m.rotors[1] & 0x1ff) << 3) | ((m.rotors[2] & 0x1ff) >> 6))
-	cmd[3] = byte(((m.rotors[2] & 0x1ff) << 2) | ((m.rotors[3] & 0x1ff) >> 7))
-	cmd[4] = byte(((m.rotors[3] & 0x1ff) << 1))
+	cmd[0] = byte(0x20 | ((m.speeds[0] & 0x1ff) >> 4))
+	cmd[1] = byte(((m.speeds[0] & 0x1ff) << 4) | ((m.speeds[1] & 0x1ff) >> 5))
+	cmd[2] = byte(((m.speeds[1] & 0x1ff) << 3) | ((m.speeds[2] & 0x1ff) >> 6))
+	cmd[3] = byte(((m.speeds[2] & 0x1ff) << 2) | ((m.speeds[3] & 0x1ff) >> 7))
+	cmd[4] = byte(((m.speeds[3] & 0x1ff) << 1))
 	return cmd
 }
 
-func (m *Rotors) UpdateMotors() error {
+func (m *Controller) UpdateController() error {
 	_, err := m.file.Write(m.pwmCmd())
 	return err
 }
 
-func (m *Rotors) UpdateLeds() error {
+func (m *Controller) UpdateLeds() error {
 	_, err := m.file.Write(m.ledCmd())
 	return err
 }

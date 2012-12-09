@@ -31,12 +31,12 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var data interface{}
 	var err error
 	switch r.URL.Path {
-	case "/sensors":
-		data, err = s.getSensors()
-	case "/burnout":
-		data, err = s.firmware.Burnout()
-	case "/disco":
-		data, err = s.firmware.AnimateLeds()
+	//case "/sensors":
+		//data, err = s.getSensors()
+	//case "/burnout":
+		//data, err = s.firmware.Burnout()
+	//case "/disco":
+		//data, err = s.firmware.Disco()
 	case "/favicon.ico":
 		return
 	default:
@@ -55,9 +55,4 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(response)
-}
-
-func (s *server) getSensors() (interface{}, error) {
-	data, err := s.firmware.Sensors()
-	return data, err
 }

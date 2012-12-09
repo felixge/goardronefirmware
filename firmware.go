@@ -1,17 +1,14 @@
 package goardronefirmware
 
 import (
-	"github.com/felixge/goardronefirmware/rotors"
-	"github.com/felixge/goardronefirmware/sensors"
+	"github.com/felixge/goardronefirmware/motors"
 	"log"
-	"time"
 )
 
 const Version = "0.0.1"
 
 type Firmware struct {
-	sensors *sensors.Sensors
-	rotors  *rotors.Rotors
+	mc *motors.Controller
 }
 
 func Start() (*Firmware, error) {
@@ -21,44 +18,11 @@ func Start() (*Firmware, error) {
 
 func (f *Firmware) Init() error {
 	log.Printf("Initializing firmware v%s ...\n", Version)
-	f.sensors = sensors.Start()
 
-	r, err := rotors.NewRotors()
+	mc, err := motors.NewController()
 	if err != nil {
 		return err
 	}
-	f.rotors = r
+	f.mc = mc
 	return nil
-}
-
-func (f *Firmware) Burnout() (interface{}, error) {
-	start := time.Now()
-	f.rotors.SetSpeed(0, 511)
-	f.rotors.SetSpeed(1, 511)
-	f.rotors.SetSpeed(2, 511)
-	f.rotors.SetSpeed(3, 511)
-
-	for {
-		f.rotors.UpdateMotors()
-		time.Sleep(30 * time.Millisecond)
-
-		if time.Since(start) > 10 * time.Second {
-			break
-		}
-	}
-
-	return struct{ Ok bool }{true}, nil
-}
-
-func (f *Firmware) AnimateLeds() (interface{}, error) {
-	err := rotors.AnimateLeds(f.rotors)
-	if err != nil {
-		return nil, err
-	}
-
-	return struct{ Ok bool }{true}, nil
-}
-
-func (f *Firmware) Sensors() (interface{}, error) {
-	return struct{ Hello string }{"fuck"}, nil
 }
