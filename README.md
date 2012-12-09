@@ -24,6 +24,12 @@ This project draws ideas and inspiration from:
 Besides that I am also using `strace` and the `/proc` folder on the drone
 analyze the official firmware
 
+## API Docs
+
+The API is not stable, but if you're curious, here the documentation:
+
+http://go.pkgdoc.org/github.com/felixge/goardronefirmware
+
 ## Current status
 
 * Full control over each rotor (set speed between 0 - 511)
