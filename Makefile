@@ -26,8 +26,8 @@ echo expect -re .*#;\
 endef
 
 
-debug-navdata: navdata/debug/server.go
+goardronefirmeware: bin/goardronefirmware.go
 	go build -o $@ $^
 	@$(call run,$@)
 
-.PHONY: debug-navdata
+.PHONY: goardronefirmeware

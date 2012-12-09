@@ -1,6 +1,7 @@
 package rotors
 
 import (
+	"math/rand"
 	"os"
 	"time"
 )
@@ -14,18 +15,11 @@ func AnimateLeds(rotors *Rotors) error {
 		return err
 	}
 
-	for loop := 0; loop < 100; loop++ {
+	for loop := 0; loop < 50; loop++ {
 		for i := 0; i < 4; i++ {
-			rotors.SetLed(i, LedOrange)
-
-			if i == 0 {
-				rotors.SetLed(3, LedOff)
-			} else {
-				rotors.SetLed(i-1, LedOff)
-			}
-
+			rotors.SetLed(i, LedColor(rand.Intn(LedOrange + 1)))
 			err = rotors.UpdateLeds()
-			time.Sleep(150 * time.Millisecond)
+			time.Sleep(25 * time.Millisecond)
 
 			if err != nil {
 				return err
